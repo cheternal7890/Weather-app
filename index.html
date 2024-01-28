@@ -38,21 +38,28 @@
 
         <div class="days-forecast">
           <h1>4-Day Forecast</h1>
-          <ul class="weather-cards">
-            <!-- Forecast cards will be added dynamically here -->
-          </ul>
+          <ul class="weather-cards"></ul>
         </div>
       </div>
     </div>
 
     <script>
       const apiKey = "11b815acfff49b556d18c1a5f87e4450";
-      const apiUrl = "https://api.openweathermap.org/data/2.5/forecast?units=metric&q=";
+      const apiUrl =
+        "https://api.openweathermap.org/data/2.5/forecast?units=metric&q=";
 
       // Function to get the day of the week from a date object
       function getDayOfWeek(date) {
-          const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-          return daysOfWeek[date.getDay()];
+        const daysOfWeek = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
+        return daysOfWeek[date.getDay()];
       }
 
       async function checkWeather(city) {
@@ -71,29 +78,19 @@
         document.querySelector(".feels-like").innerHTML =
           "Feels like " + Math.round(data.list[0].main.feels_like) + "°";
 
-        // Capitalize the first letter of the description
-        const description = data.list[0].weather[0].description;
-        const capitalizedDescription = description.charAt(0).toUpperCase() + description.slice(1);
-
-        document.querySelector(".description").innerHTML = capitalizedDescription;
-
+        document.querySelector(".description").innerHTML =
+          data.list[0].weather[0].description;
         setWeatherIcon(data.list[0].weather[0].main);
 
         // Display 4-day forecast
-        const currentDate = new Date(); // Get current date
-        const today = currentDate.getDay(); // Get current day
-        let forecastIndex = 0;
-
-        // Find the index for the next day's forecast
-        while (new Date(data.list[forecastIndex].dt_txt).getDay() === today) {
-          forecastIndex++;
-        }
-
+        const forecastData = data.list.filter(
+          (item, index) => index % 8 === 0 && index > 0
+        ); // Filter every 8th element and skip the first one
         const weatherCards = document.querySelector(".weather-cards");
+
         weatherCards.innerHTML = ""; // Clear existing forecast
 
-        for (let i = forecastIndex; i < forecastIndex + 4; i++) {
-          const forecast = data.list[i];
+        forecastData.forEach((forecast) => {
           const forecastDate = new Date(forecast.dt_txt);
           const forecastDay = getDayOfWeek(forecastDate); // Get the day of the week
           const forecastTemp = Math.round(forecast.main.temp) + "°";
@@ -102,12 +99,12 @@
           const card = document.createElement("li");
           card.className = "card";
           card.innerHTML = `
-            <img src="${forecastIcon}" />
-            <h1>${forecastTemp}</h1>
-            <p>${forecastDay}</p>
-          `;
+    <center><img src="${forecastIcon}" /></center>
+    <center><h1>${forecastTemp}</h1></center>
+    <center><p>${forecastDay}</p></center>
+  `;
           weatherCards.appendChild(card);
-        }
+        });
       }
 
       function setWeatherIcon(weatherType) {
@@ -154,7 +151,7 @@
       });
 
       // Initial load
-      checkWeather("Miami"); // 
+      checkWeather("Miami"); //
     </script>
   </body>
 </html>
