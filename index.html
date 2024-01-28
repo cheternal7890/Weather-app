@@ -39,25 +39,7 @@
         <div class="days-forecast">
           <h1>4-Day Forecast</h1>
           <ul class="weather-cards">
-            <li class="card">
-              <img src="images/drizzle.svg" />
-              <h1>20°</h1>
-            </li>
-
-            <li class="card">
-              <img src="images/clear.svg" />
-              <h1>23°</h1>
-            </li>
-
-            <li class="card">
-              <img src="images/clear.svg" />
-              <h1>22°</h1>
-            </li>
-
-            <li class="card">
-              <img src="images/mist.svg" />
-              <h1>25°</h1>
-            </li>
+            <!-- Forecast cards will be added dynamically here -->
           </ul>
         </div>
       </div>
@@ -65,42 +47,101 @@
 
     <script>
       const apiKey = "11b815acfff49b556d18c1a5f87e4450";
-      const apiUrl =
-        "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+      const apiUrl = "https://api.openweathermap.org/data/2.5/forecast?units=metric&q=";
 
-      const searchBox = document.querySelector(".search input");
-      const searchBtn = document.querySelector(".search button");
-      const weatherIcon = document.querySelector(".weather-icon");
+      // Function to get the day of the week from a date object
+      function getDayOfWeek(date) {
+          const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+          return daysOfWeek[date.getDay()];
+      }
 
       async function checkWeather(city) {
         const response = await fetch(apiUrl + city + `&appid=${apiKey}`);
-        var data = await response.json();
+        const data = await response.json();
 
         console.log(data);
 
-        document.querySelector(".city").innerHTML = data.name;
+        document.querySelector(".city").innerHTML = data.city.name;
         document.querySelector(".temp").innerHTML =
-          Math.round(data.main.temp) + "°C";
+          Math.round(data.list[0].main.temp) + "°C";
         document.querySelector(".humidity").innerHTML =
-          data.main.humidity + "%";
-        document.querySelector(".wind").innerHTML = data.wind.speed + "km/h";
+          data.list[0].main.humidity + "%";
+        document.querySelector(".wind").innerHTML =
+          data.list[0].wind.speed + " km/h";
         document.querySelector(".feels-like").innerHTML =
-          "Feels like " + Math.round(data.main.feels_like) + "°";
-        document.querySelector(".description").innerHTML =
-          data.weather[0].description;
+          "Feels like " + Math.round(data.list[0].main.feels_like) + "°";
 
-        if (data.weather[0].main == "Clouds") {
+        // Capitalize the first letter of the description
+        const description = data.list[0].weather[0].description;
+        const capitalizedDescription = description.charAt(0).toUpperCase() + description.slice(1);
+
+        document.querySelector(".description").innerHTML = capitalizedDescription;
+
+        setWeatherIcon(data.list[0].weather[0].main);
+
+        // Display 4-day forecast
+        const currentDate = new Date(); // Get current date
+        const today = currentDate.getDay(); // Get current day
+        let forecastIndex = 0;
+
+        // Find the index for the next day's forecast
+        while (new Date(data.list[forecastIndex].dt_txt).getDay() === today) {
+          forecastIndex++;
+        }
+
+        const weatherCards = document.querySelector(".weather-cards");
+        weatherCards.innerHTML = ""; // Clear existing forecast
+
+        for (let i = forecastIndex; i < forecastIndex + 4; i++) {
+          const forecast = data.list[i];
+          const forecastDate = new Date(forecast.dt_txt);
+          const forecastDay = getDayOfWeek(forecastDate); // Get the day of the week
+          const forecastTemp = Math.round(forecast.main.temp) + "°";
+          const forecastIcon = getWeatherIcon(forecast.weather[0].main);
+
+          const card = document.createElement("li");
+          card.className = "card";
+          card.innerHTML = `
+            <img src="${forecastIcon}" />
+            <h1>${forecastTemp}</h1>
+            <p>${forecastDay}</p>
+          `;
+          weatherCards.appendChild(card);
+        }
+      }
+
+      function setWeatherIcon(weatherType) {
+        const weatherIcon = document.querySelector(".weather-icon");
+
+        if (weatherType === "Clouds") {
           weatherIcon.src = "images/clouds.svg";
-        } else if (data.weather[0].main == "Clear") {
+        } else if (weatherType === "Clear") {
           weatherIcon.src = "images/clear.svg";
-        } else if (data.weather[0].main == "Rain") {
+        } else if (weatherType === "Rain") {
           weatherIcon.src = "images/rain.svg";
-        } else if (data.weather[0].main == "Drizzle") {
+        } else if (weatherType === "Drizzle") {
           weatherIcon.src = "images/drizzle.svg";
-        } else if (data.weather[0].main == "Mist") {
+        } else if (weatherType === "Mist") {
           weatherIcon.src = "images/mist.svg";
         }
       }
+
+      function getWeatherIcon(weatherType) {
+        if (weatherType === "Clouds") {
+          return "images/clouds.svg";
+        } else if (weatherType === "Clear") {
+          return "images/clear.svg";
+        } else if (weatherType === "Rain") {
+          return "images/rain.svg";
+        } else if (weatherType === "Drizzle") {
+          return "images/drizzle.svg";
+        } else if (weatherType === "Mist") {
+          return "images/mist.svg";
+        }
+      }
+
+      const searchBox = document.querySelector(".search input");
+      const searchBtn = document.querySelector(".search button");
 
       searchBtn.addEventListener("click", () => {
         checkWeather(searchBox.value);
@@ -111,6 +152,9 @@
           checkWeather(searchBox.value);
         }
       });
+
+      // Initial load
+      checkWeather("Miami"); // You can set a default city here
     </script>
   </body>
 </html>
