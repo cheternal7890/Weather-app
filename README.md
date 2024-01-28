@@ -2,6 +2,8 @@
 
 Welcome to the Weather App! This web application allows users to check the weather forecast for various cities around the world.
 
+You can access the live demo of the application [here](https://lobster-app-blwh8.ondigitalocean.app/).
+
 <img width="442" alt="weather app" src="https://github.com/cheternal7890/Weather-app/assets/157067093/7745105a-e5d5-477c-8cb6-cab644580153">
 
 ## Features
